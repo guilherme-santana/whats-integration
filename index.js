@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');
 const app = express();
 app.use(express.json());
 
@@ -20,22 +21,32 @@ app.get('/webhook', (req, res) => {
 app.post('/webhook', (req, res) => {
     const data = req.body;
 
-    if (data && data.entry) {
-        data.entry.forEach(entry => {
-            const changes = entry.changes;
-            changes.forEach(change => {
-                const message = change.value.messages && change.value.messages[0];
-                if (message) {
-                    console.log("Mensagem recebida:", message);
-                    // Aqui você pode processar e encaminhar a mensagem para outro serviço
-                }
-            });
-        });
+    if (data) {
+        if(enviarDados()){
+            res.sendStatus(200);
+        }else{
+            res.sendStatus(500);
+        }
     }
-
-    res.sendStatus(200);
 });
 
 app.listen(3000, () => {
     console.log('Webhook escutando na porta 3000');
 });
+
+async function enviarDados() {
+    try {
+        const response = await axios.post('https://discord.com/api/webhooks/1252338890749247589/zn5_n1TV_xPlrY69SM_gFseW0kNQFFt1G3kebDkpA48954XfVxxo4zgi2NKYlQWjM1iD', {
+            content: 'Dados enviados'
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        console.log("Resposta do serviço:", response.data);
+        return true
+    } catch (error) {
+        console.error("Erro ao enviar dados:", error);
+        return false;
+    }
+}
